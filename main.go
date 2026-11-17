@@ -22,16 +22,11 @@ var hook = strings.Split(BotToken, ":")[1]
 // ساختار مورد نیاز از آپدیت تلگرام
 type Update struct {
 	Message *struct {
-		From struct {
+		Text string `json:"text"`
+		Chat struct {
 			ID int64 `json:"id"`
-		} `json:"from"`
+		} `json:"chat"`
 	} `json:"message"`
-	CallbackQuery *struct {
-		ID   string `json:"id"`
-		From struct {
-			ID int64 `json:"id"`
-		} `json:"from"`
-	} `json:"callback_query"`
 }
 
 func main() {
@@ -60,37 +55,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// معادل JSON.stringify(update)
-		var compact bytes.Buffer
-		_ = json.Compact(&compact, body)
-		updateText := compact.String()
-
-		// قسمت message
-		if update.Message != nil {
-			chatID := update.Message.From.ID
+		// فقط پیام‌های متنی پردازش می‌شوند
+		if update.Message != nil && update.Message.Text != "" {
+			chatID := update.Message.Chat.ID
+			text := update.Message.Text
 
 			if _, err := req("sendMessage", map[string]any{
 				"chat_id": chatID,
-				"text":    updateText,
-			}); err != nil {
-				log.Println("sendMessage error:", err)
-			}
-		}
-
-		// قسمت callback
-		if update.CallbackQuery != nil {
-			chatID := update.CallbackQuery.From.ID
-
-			if _, err := req("answerCallbackQuery", map[string]any{
-				"callback_query_id": update.CallbackQuery.ID,
-				"text":              "دکمه کلیک شد!",
-			}); err != nil {
-				log.Println("answerCallbackQuery error:", err)
-			}
-
-			if _, err := req("sendMessage", map[string]any{
-				"chat_id": chatID,
-				"text":    updateText,
+				"text":    reply(text),
 			}); err != nil {
 				log.Println("sendMessage error:", err)
 			}
@@ -118,6 +90,18 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprint(w, "ok")
+}
+
+// منطق پاسخ‌دهی ربات
+func reply(text string) string {
+	switch strings.TrimSpace(text) {
+	case "سلام":
+		return "علیک سلام"
+	case "خدافظ", "خداحافظ":
+		return "خدافظ✋"
+	default:
+		return "تو گفتی: " + text
+	}
 }
 
 // معادل url.origin در جاوااسکریپت
