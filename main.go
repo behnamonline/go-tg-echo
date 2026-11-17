@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	BotToken = "YOUR_BOT_TOKEN"
-	BotID    = "@YOUR_BOT_ID"
+	BotToken = "8638263479:AAEZ6He5F3RayRsS-E8v-SyndkItJV02IME"
+	BotID    = "@mybenshop_bot"
 )
 
 // بخش بعد از ":" توکن به عنوان مسیر وبهوک استفاده می‌شود
